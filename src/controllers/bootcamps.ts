@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 //@route    GET /api/v1/bootcamps
 //@access   Public
 export const getBootcamps = (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({sucess: true, message: 'Show all bootcamps'})
+    res.status(200).json({sucess: true, message: 'Show all bootcamps' })
 }
 
 //@desk     Get single bootcamps
