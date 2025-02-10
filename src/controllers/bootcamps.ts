@@ -9,6 +9,7 @@ export const getBootcamps = async(req: Request, res: Response, next: NextFunctio
         const bootcamps = await Bootcamp.find()
         res.status(200).json({
             sucess: true,
+            count: bootcamps.length,
             data: bootcamps
         })        
     } catch (error) {
@@ -84,7 +85,7 @@ export const deleteBootcamp = async(req: Request, res: Response, next: NextFunct
                 res.status(400).json({success: false})
             }
 
-        res.status(200).json({sucess: true, data: "bootcamp has been deleted"})
+        res.status(200).json({sucess: true, data: {}})
 
     } catch (error) {
         res.status(400).json({ success: false})
