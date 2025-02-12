@@ -1,94 +1,78 @@
 import { Request, Response, NextFunction } from 'express';
 import Bootcamp from '../models/Bootcamp';
+import ErrorResponse from '../utils/errorResponse';
+import asyncHandler from '../middlewares/asyncHandler';
 
 //@desk     Get all bootcamps
 //@route    GET /api/v1/bootcamps
 //@access   Public
-export const getBootcamps = async(req: Request, res: Response, next: NextFunction) => {
-    try {
-        const bootcamps = await Bootcamp.find()
-        res.status(200).json({
-            sucess: true,
-            count: bootcamps.length,
-            data: bootcamps
-        })        
-    } catch (error) {
-        res.status(400).json({ success: false})
-    }
-}
+export const getBootcamps = asyncHandler(async(req: Request, res: Response) => {
+    const bootcamps = await Bootcamp.find()
+    res.status(200).json({
+        sucess: true,
+        count: bootcamps.length,
+        data: bootcamps
+    })        
+})
 
 //@desk     Get single bootcamps
 //@route    GET /api/v1/bootcamp/:id
 //@access   Public
-export const getBootcamp = async(req: Request, res: Response, next: NextFunction) => {
-    try {
-        const bootcamp = await Bootcamp.findById(req.params.id)
+export const getBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+ 
+    const bootcamp = await Bootcamp.findById(req.params.id)
 
-        if(!bootcamp)
-        {
-            res.status(400).json({success: false})
-        }
-
-        res.status(200).json({sucess: true, data: bootcamp})
-    } catch (error) {
-        res.status(400).json({success: false})
+    if(!bootcamp)
+    {
+        return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
     }
-}
+
+    res.json({sucess: true, data: bootcamp})
+
+})
 
 //@desk     Create new bootcamp
 //@route    POST /api/v1/bootcamp/
 //@access   Private
-export const createBootcamp = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const bootcamp = await Bootcamp.create(req.body)
-        res.status(201).json({
-            sucess: true,
-            data: bootcamp
-        })        
-    } catch (error) {
-        res.status(400).json({ success: false})
-    }
-}
+export const createBootcamp = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const bootcamp = await Bootcamp.create(req.body)
+    res.status(201).json({
+        sucess: true,
+        data: bootcamp
+    })        
+})
 
 //@desk     Update new bootcamp
 //@route    PUT /api/v1/bootcamp/:id
 //@access   Private
-export const updateBootcamp = async(req: Request, res: Response, next: NextFunction) => {
-    try {
-        const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-            new: true, 
-            runValidators: true
-        })
+export const updateBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
 
-        if(!bootcamp)
-            {
-                res.status(400).json({success: false})
-            }
+    const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+        new: true, 
+        runValidators: true
+    })
 
-        res.status(200).json({sucess: true, data: bootcamp})
+    if(!bootcamp)
+        {
+            return res.status(400).json({success: false})
+        }
 
-    } catch (error) {
-        res.status(400).json({ success: false})
-    }
-}
+    res.status(200).json({sucess: true, data: bootcamp})
+})
 
 
 //@desk     Delete new bootcamp
 //@route    DELETE /api/v1/bootcamp/:id
 //@access   Private
-export const deleteBootcamp = async(req: Request, res: Response, next: NextFunction) => {
-    try {
-        const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+export const deleteBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
 
-        if(!bootcamp)
-            {
-                res.status(400).json({success: false})
-            }
+    if(!bootcamp)
+        {
+            return res.status(400).json({success: false})
+        }
 
-        res.status(200).json({sucess: true, data: {}})
+    res.status(200).json({sucess: true, data: {}})
 
-    } catch (error) {
-        res.status(400).json({ success: false})
-    }
-}
+})
 
