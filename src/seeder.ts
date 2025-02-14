@@ -5,7 +5,7 @@ import Bootcamp from './models/Bootcamp';
 
 dotenv.config({path: '../config/config.env'});
 
-const conn = mongoose.connect(process.env.DB_CONNECTION || 'undefined')
+const conn = mongoose.connect(process.env.DB_CONNECTION || 'mongodb+srv://dimi:dimi@clusterfordevcamper.jdyuv.mongodb.net/?retryWrites=true&w=majority&appName=ClusterForDevCamper')
 const bootcamps = JSON.parse(fs.readFileSync(`${__dirname}/_data/bootcamps.json`, 'utf-8'))
 
 const importData = async() => {
