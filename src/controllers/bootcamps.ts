@@ -76,3 +76,13 @@ export const deleteBootcamp = asyncHandler(async(req: Request, res: Response, ne
 
 })
 
+
+//@desk     Delete all bootcamp
+//@route    DELETE /api/v1/bootcamp/
+//@access   Private
+export const deleteAllBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+    const bootcamp = await Bootcamp.deleteMany({})
+    res.status(200).json({sucess: true, data: {}})
+
+})
+
