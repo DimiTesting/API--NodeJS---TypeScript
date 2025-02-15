@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import {getBootcamps, getBootcamp, createBootcamp, updateBootcamp, deleteBootcamp, deleteAllBootcamp} from '../controllers/bootcamps';
+import {getBootcamps, getBootcamp, createBootcamp, 
+        updateBootcamp, deleteBootcamp, deleteAllBootcamp, 
+        getBootcampsInRadius
+    } from '../controllers/bootcamps';
 
 const router = Router()
 
@@ -15,5 +18,8 @@ router
     .put(updateBootcamp)
     .delete(deleteBootcamp)
 
+router
+    .route('/radius/:zipcode/:distance')
+    .get(getBootcampsInRadius)
 
 export default router
