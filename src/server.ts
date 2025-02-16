@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import morgan from 'morgan';
 import bootcampRouter from './routes/bootcamps';
+import coursesRouter from './routes/courses';
 import connectDB from '../config/db';
 import errorHandler from './middlewares/error';
 
@@ -10,6 +11,7 @@ dotenv.config({path: './config/config.env'});
 connectDB()
 
 const bootcamps = bootcampRouter
+const courses = coursesRouter
 
 const app = express();
 
@@ -21,6 +23,7 @@ if(process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/v1/bootcamps', bootcamps)
+app.use('/api/v1/courses', courses)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000; 
