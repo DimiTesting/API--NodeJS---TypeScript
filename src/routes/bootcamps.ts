@@ -3,8 +3,11 @@ import {getBootcamps, getBootcamp, createBootcamp,
         updateBootcamp, deleteBootcamp, deleteAllBootcamp, 
         getBootcampsInRadius
     } from '../controllers/bootcamps';
+import coursesRouter from './courses'
 
 const router = Router()
+
+router.use('/:bootcampId/courses', coursesRouter);
 
 router
     .route('/')

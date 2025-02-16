@@ -99,6 +99,9 @@ const BootcampScheme = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
 });
 
 BootcampScheme.pre('save', function(next) {
@@ -119,6 +122,21 @@ BootcampScheme.pre('save', async function(next){
         country: loc[0].countryCode
     }
     next();   
+});
+
+BootcampScheme.pre('findOneAndDelete', async function(next) {
+    const bootcampId = this.getFilter()._id
+    console.log(`Courses being removed from bootcamp ${bootcampId}`);
+    const CourseModel = mongoose.model('Course');  
+    await CourseModel.deleteMany({bootcamp: bootcampId});
+    next();
+});
+
+BootcampScheme.virtual('courses', {
+    ref: 'Course',
+    localField: '_id',
+    foreignField: 'bootcamp',
+    justOne: false
 });
 
 export default mongoose.model('Bootcamp', BootcampScheme);
