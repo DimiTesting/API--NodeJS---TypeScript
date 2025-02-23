@@ -1,6 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, {Model, Schema, Document} from "mongoose";
 
-const CourseSchema = new mongoose.Schema({
+interface ICourse extends Document {
+    title: string;
+    description: string;
+    weeks: string;
+    tuition: number;
+    minimumSkill: 'beginner' | 'intermediate' | 'advance';
+    scholarshipAvailable: boolean;
+    createdAt: Date;
+    bootcamp: mongoose.Types.ObjectId;
+}
+
+interface ICourseModel extends Model<ICourse> {
+    getAverageCost(bootcampId: mongoose.Types.ObjectId): Promise<void>;
+}
+
+const CourseSchema = new mongoose.Schema<ICourse>({
     title: {
         type: String, 
         trim: true,
@@ -36,6 +51,40 @@ const CourseSchema = new mongoose.Schema({
         ref: 'Bootcamp',
         required: true
     }
+});
+
+CourseSchema.statics.getAverageCost = async function(bootcampId : mongoose.Types.ObjectId) {
+    console.log('Calculating average cost');
+
+    const obj = await this.aggregate([
+        {
+            $match: {bootcamp: bootcampId}
+        },
+        {
+            $group: {
+                _id: '$bootcamp',
+                averageCost: {$avg: '$tuition'}
+            }
+        }        
+    ]);
+
+    console.log(obj)
+
+    try {
+        await mongoose.model('Bootcamp').findByIdAndUpdate(bootcampId, {
+            averageCost: obj.length > 0 ? Math.ceil(obj[0].averageCost) : 0
+        });
+    } catch (error) {
+        console.error('Error updating bootcamp average cost:', error);
+    }
+}
+
+CourseSchema.post('save', function() {
+    (this.constructor as ICourseModel).getAverageCost(this.bootcamp);
+});
+
+CourseSchema.pre('deleteOne', {document: true}, function() {
+    (this.constructor as ICourseModel).getAverageCost(this.bootcamp);
 });
 
 export default mongoose.model('Course', CourseSchema);
