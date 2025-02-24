@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
+import {UploadedFile} from 'express-fileupload'
 import Bootcamp from '../models/Bootcamp';
 import ErrorResponse from '../utils/errorResponse';
 import asyncHandler from '../middlewares/asyncHandler';
 import geocoder from '../utils/geocoder';
+import path from 'path';
 
 //@desk     Get all bootcamps
 //@route    GET /api/v1/bootcamps
@@ -167,3 +169,75 @@ export const deleteAllBootcamp = asyncHandler(async(req: Request, res: Response,
 
 })
 
+//@desk     Add photo to bootcamp
+//@route    PUT /api/v1/bootcamp/:id/photo
+//@access   Private
+export const uploadPhoto = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+    const bootcamp = await Bootcamp.findById(req.params.id)
+
+    if(!bootcamp){
+        return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
+    }
+
+    if(!req.files) {
+        return next(new ErrorResponse(`File not found`, 404))
+    }
+
+
+    if(Array.isArray(req.files)) {
+        if(req.files[0].mimetype.includes('image')) {
+            return next(new ErrorResponse(`File does not have the correct format ${req.files[0]}`, 404))
+        } else {
+            if (!String(req.files.mimetype).includes('image')) {
+                return next(new ErrorResponse(`File does not have the correct format: ${req.files.mimetype}`, 404));
+            }
+        }
+    }
+
+    if(Number(req.files.size) > 1000000) {
+        return next(new ErrorResponse(`File size is bigger than the limit`, 404))
+    }
+
+    const file = req.files.file
+
+    let formattedName : string = '';
+
+    if(Array.isArray(file))
+    {
+        formattedName = `photo_${bootcamp._id}${path.parse((file[0])?.name).ext}`
+    }
+    else 
+    {
+        formattedName = `photo_${bootcamp._id}${path.parse((file as UploadedFile).name).ext}`
+    }
+
+    if (Array.isArray(file)) {
+        file.forEach(file => {
+          file.mv(`./src/public/photos/${formattedName}`, async(err:Error) => {
+            if(err) {
+                console.log(err);
+            }
+    
+            await Bootcamp.findByIdAndUpdate(req.params.id, {photo: formattedName});
+    
+            res.status(200).json({
+                success: true,
+                data: formattedName
+            })
+          });
+        });
+    } else {
+        file.mv(`./src/public/photos/${formattedName}`, async(err:Error) => {
+            if(err) {
+                console.log(err);
+            }
+    
+            await Bootcamp.findByIdAndUpdate(req.params.id, {photo: formattedName});
+    
+            res.status(200).json({
+                success: true,
+                data: formattedName
+            })
+          });        
+    }
+})

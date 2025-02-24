@@ -5,6 +5,8 @@ import bootcampRouter from './routes/bootcamps';
 import coursesRouter from './routes/courses';
 import connectDB from '../config/db';
 import errorHandler from './middlewares/error';
+import fileUpload from 'express-fileupload';
+import path = require('path');
 
 dotenv.config({path: './config/config.env'});
 
@@ -15,7 +17,10 @@ const courses = coursesRouter
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
+app.use(fileUpload());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 if(process.env.NODE_ENV === 'development') {
