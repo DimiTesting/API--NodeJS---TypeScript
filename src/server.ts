@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import morgan from 'morgan';
 import bootcampRouter from './routes/bootcamps';
 import coursesRouter from './routes/courses';
+import authRouter from './routes/auth'
 import connectDB from '../config/db';
 import errorHandler from './middlewares/error';
 import fileUpload from 'express-fileupload';
@@ -14,6 +15,7 @@ connectDB()
 
 const bootcamps = bootcampRouter
 const courses = coursesRouter
+const auth = authRouter
 
 const app = express();
 
@@ -29,6 +31,7 @@ if(process.env.NODE_ENV === 'development') {
 
 app.use('/api/v1/bootcamps', bootcamps)
 app.use('/api/v1/courses', courses)
+app.use('/api/v1/auth', auth)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000; 
