@@ -3,6 +3,13 @@ import asyncHandler from '../middlewares/asyncHandler';
 import User from '../models/User';
 import { Request, Response, NextFunction } from 'express';
 
+interface AuthenticatedRequest extends Request {
+    user?: { 
+        id: string,
+        role: string
+    };
+  }
+
 //@desk     Register user
 //@route    POST /api/v1/auth/register
 //@access   Public
@@ -56,3 +63,26 @@ const sendTokenResponse = (user: any, statusCode: number, res:Response) => {
        .cookie('token', token, options)
        .json({success: true, token})
 }
+
+//@desk     Get current logged user
+//@route    POST /api/v1/auth/me
+//@access   Private
+
+export const getMe = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+    if(!req.user) {
+        return next(new ErrorResponse('Unauthorized', 401))
+    }
+
+    const user = await User.findById(req.user.id)
+
+    if(!user) {
+        return next(new ErrorResponse('user not found', 404))
+    }
+
+    console.log(user)
+
+    res.status(200).json({success: true, user})
+})
+
+

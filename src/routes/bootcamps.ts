@@ -5,6 +5,7 @@ import {getBootcamps, getBootcamp, createBootcamp,
         uploadPhoto
     } from '../controllers/bootcamps';
 import coursesRouter from './courses'
+import {protect, authorize} from '../middlewares/auth'
 
 const router = Router()
 
@@ -12,19 +13,19 @@ router.use('/:bootcampId/courses', coursesRouter);
 
 router
     .route('/:id/photo')
-    .put(uploadPhoto)
+    .put(protect, authorize('publisher', 'admin'), uploadPhoto)
 
 router
     .route('/')
     .get(getBootcamps)
-    .post(createBootcamp)
-    .delete(deleteAllBootcamp)
+    .post(protect, authorize('publisher', 'admin'), createBootcamp)
+    .delete(protect, authorize('publisher', 'admin'), deleteAllBootcamp)
 
 router
     .route('/:id')
     .get(getBootcamp)
-    .put(updateBootcamp)
-    .delete(deleteBootcamp)
+    .put(protect, authorize('publisher', 'admin'), updateBootcamp)
+    .delete(protect, authorize('publisher', 'admin'), deleteBootcamp)
 
 router
     .route('/radius/:zipcode/:distance')
