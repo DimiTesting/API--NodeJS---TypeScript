@@ -4,6 +4,11 @@ import geocoder from "../utils/geocoder";
 
 
 const BootcampScheme = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
+    },
     name: {
         type: String,
         required: [true, 'Please add a name'],

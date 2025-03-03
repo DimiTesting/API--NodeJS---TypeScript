@@ -6,6 +6,13 @@ import asyncHandler from '../middlewares/asyncHandler';
 import geocoder from '../utils/geocoder';
 import path from 'path';
 
+interface AuthenticatedRequest extends Request {
+    user?: { 
+        id: string,
+        role: string
+    };
+}
+
 //@desk     Get all bootcamps
 //@route    GET /api/v1/bootcamps
 //@access   Public
@@ -117,7 +124,16 @@ export const getBootcampsInRadius = asyncHandler(async(req: Request, res: Respon
 //@desk     Create new bootcamp
 //@route    POST /api/v1/bootcamp/
 //@access   Private
-export const createBootcamp = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const createBootcamp = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+    req.body.user = req.user?.id
+
+    const publishedBootcamp = await Bootcamp.findOne({ user: req.user?.id})
+
+    if(publishedBootcamp && req.user?.role !== 'admin' ) {
+        next(new ErrorResponse(`The user id ${req.user?.id} has already published the bootcamp`, 404))
+    }
+
     const bootcamp = await Bootcamp.create(req.body)
     res.status(201).json({
         sucess: true,
