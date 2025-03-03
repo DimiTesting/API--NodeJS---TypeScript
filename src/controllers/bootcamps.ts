@@ -144,17 +144,23 @@ export const createBootcamp = asyncHandler(async (req: AuthenticatedRequest, res
 //@desk     Update new bootcamp
 //@route    PUT /api/v1/bootcamp/:id
 //@access   Private
-export const updateBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const updateBootcamp = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
-    const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-        new: true, 
-        runValidators: true
-    })
+    let bootcamp = await Bootcamp.findById(req.params.id);
+
+    if(bootcamp?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to update this bootcamp`, 401))
+    }
 
     if(!bootcamp)
         {
             return res.status(400).json({success: false})
         }
+
+    bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+        new: true, 
+        runValidators: true
+    })
 
     res.status(200).json({sucess: true, data: bootcamp})
 })
@@ -163,8 +169,12 @@ export const updateBootcamp = asyncHandler(async(req: Request, res: Response, ne
 //@desk     Delete new bootcamp
 //@route    DELETE /api/v1/bootcamp/:id
 //@access   Private
-export const deleteBootcamp = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const deleteBootcamp = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+
+    if(bootcamp?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to update this bootcamp`, 401))
+    }
 
     if(!bootcamp)
         {
@@ -188,11 +198,15 @@ export const deleteAllBootcamp = asyncHandler(async(req: Request, res: Response,
 //@desk     Add photo to bootcamp
 //@route    PUT /api/v1/bootcamp/:id/photo
 //@access   Private
-export const uploadPhoto = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const uploadPhoto = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const bootcamp = await Bootcamp.findById(req.params.id)
 
     if(!bootcamp){
         return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
+    }
+
+    if(bootcamp?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to update this bootcamp`, 401))
     }
 
     if(!req.files) {
