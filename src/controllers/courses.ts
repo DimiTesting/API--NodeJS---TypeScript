@@ -4,6 +4,13 @@ import ErrorResponse from '../utils/errorResponse';
 import asyncHandler from '../middlewares/asyncHandler';
 import Bootcamp from '../models/Bootcamp';
 
+interface AuthenticatedRequest extends Request {
+    user?: { 
+        id: string,
+        role: string
+    };
+}
+
 
 //@desk     Get all courses
 //@route    GET /api/v1/courses
@@ -54,9 +61,10 @@ export const getSingleCourse = asyncHandler(async(req: Request, res: Response, n
 //@desk     Add a course
 //@route    POST /api/v1/bootcamps/:bootcampId/courses
 //@access   Private
-export const addCourse = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const addCourse = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
     req.body.bootcamp = req.params.bootcampId
+    req.body.user = req.user?.id
 
     const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
@@ -64,6 +72,10 @@ export const addCourse = asyncHandler(async(req: Request, res: Response, next: N
         return next( 
             new ErrorResponse(`No bootcamp with the id of ${req.params.bootcampId}`, 404) 
         );
+    }
+
+    if(bootcamp?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to add a course to this bootcamp ${bootcamp._id}`, 401))
     }
 
     const course = await Course.create(req.body)
@@ -77,9 +89,13 @@ export const addCourse = asyncHandler(async(req: Request, res: Response, next: N
 //@desk     Update a course
 //@route    PUT /api/v1/courses/:id
 //@access   Private
-export const updateCourse = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const updateCourse = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
     let course = await Course.findById(req.params.id)
+
+    if(course?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to update this course`, 401))
+    }
 
     if(!course) {
         return next( 
@@ -101,9 +117,13 @@ export const updateCourse = asyncHandler(async(req: Request, res: Response, next
 //@desk     Delete a course
 //@route    DELETE /api/v1/courses/:id
 //@access   Private
-export const deleteCourse = asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+export const deleteCourse = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
     const course = await Course.findByIdAndDelete(req.params.id)
+
+    if(course?.user.toString() !== req.user?.id && req.user?.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user?.id} is not authorized to update this course`, 401))
+    }
 
     if(!course) {
         return next( 

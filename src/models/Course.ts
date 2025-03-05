@@ -1,6 +1,7 @@
 import mongoose, {Model, Schema, Document} from "mongoose";
 
 interface ICourse extends Document {
+    user: Schema;
     title: string;
     description: string;
     weeks: string;
@@ -16,6 +17,11 @@ interface ICourseModel extends Model<ICourse> {
 }
 
 const CourseSchema = new mongoose.Schema<ICourse>({
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
+    },
     title: {
         type: String, 
         trim: true,
