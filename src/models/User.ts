@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import {Schema, Model} from 'mongoose'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 
 interface IUser {
     name: string,
@@ -9,13 +10,14 @@ interface IUser {
     role: string, 
     password: string, 
     resetPasswordToken: String,
-    resetPasswordExpire: Date,
+    resetPasswordExpire: Number,
     createdAt: Date
 }
 
 interface IUserMethods{
     getSignedJwtToken(): string
     matchPassword(enteredPassword: any): Promise<boolean>
+    generateResetToken(): Promise<string>
 }
 
 type UserModel = Model<IUser, {}, IUserMethods>;
@@ -46,7 +48,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
         select: false
     },
     resetPasswordToken: String,
-    resetPasswordExpire: Date, 
+    resetPasswordExpire: Number, 
     createdAt: {
         type: Date, 
         default: Date.now
@@ -54,6 +56,11 @@ const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
 });
 
 UserSchema.pre('save', async function(next) {
+
+    if(!this.isModified('password')) {
+        next()
+    }
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt)
 })
@@ -68,4 +75,13 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
     return await bcrypt.compare(enteredPassword, this.password)
 }
 
+UserSchema.methods.generateResetToken = async function(): Promise<string> {
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    return resetToken
+}
 export default mongoose.model('User', UserSchema);
