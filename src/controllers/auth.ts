@@ -87,6 +87,54 @@ export const getMe = asyncHandler(async(req: AuthenticatedRequest, res: Response
     res.status(200).json({success: true, user})
 })
 
+//@desk     Update logged-in user details
+//@route    PUT /api/v1/auth/updatedetails
+//@access   Private
+
+export const updateDetails = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+    if(!req.user) {
+        return next(new ErrorResponse('Unauthorized', 401))
+    }
+
+    const newDetails = {
+        name : req.body.name,
+        email : req.body.email
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?.id, newDetails, {
+        new: true, 
+        runValidators: true
+    })
+
+    res.status(200).json({success: true, user})
+})
+
+//@desk     Update logged-in user password
+//@route    PUT /api/v1/auth/updatepassword
+//@access   Private
+
+export const updatePassword = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+    if(!req.user) {
+        return next(new ErrorResponse('Unauthorized', 401))
+    }
+
+    const newPassword = req.body.password
+
+    const user = await User.findById(req.user.id)
+
+    if(!user) {
+        return next(new ErrorResponse('User not found', 401))
+    }
+
+    user.password = newPassword
+
+    await user.save()
+
+    sendTokenResponse(user, 200, res)
+})
+
 
 //@desk     Forgot password
 //@route    POST /api/v1/auth/forgotpassword
