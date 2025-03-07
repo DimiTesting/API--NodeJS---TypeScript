@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import morgan from 'morgan';
 import bootcampRouter from './routes/bootcamps';
 import coursesRouter from './routes/courses';
+import reviewsRouter from './routes/reviews'
 import authRouter from './routes/auth'
 import userRouter from './routes/users'
 import connectDB from '../config/db';
@@ -19,6 +20,7 @@ const bootcamps = bootcampRouter
 const courses = coursesRouter
 const auth = authRouter
 const users = userRouter
+const reviews = reviewsRouter
 
 const app = express();
 
@@ -37,6 +39,7 @@ app.use('/api/v1/bootcamps', bootcamps)
 app.use('/api/v1/courses', courses)
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
+app.use('/api/v1/reviews', reviews)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000; 

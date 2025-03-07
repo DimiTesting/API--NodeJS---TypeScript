@@ -5,11 +5,13 @@ import {getBootcamps, getBootcamp, createBootcamp,
         uploadPhoto
     } from '../controllers/bootcamps';
 import coursesRouter from './courses'
+import reviewsRouter from './reviews'
 import {protect, authorize} from '../middlewares/auth'
 
 const router = Router()
 
 router.use('/:bootcampId/courses', coursesRouter);
+router.use('/:bootcampId/reviews', reviewsRouter);
 
 router
     .route('/:id/photo')
