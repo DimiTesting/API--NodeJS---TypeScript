@@ -1,6 +1,20 @@
-import mongoose from "mongoose";
+import mongoose, {Model, Schema, Document} from "mongoose";
 
-const ReviewSchema = new mongoose.Schema({
+interface IReview extends Document {
+    title: string;
+    text: string;
+    rating: number;
+    user: mongoose.Types.ObjectId;
+    bootcamp: mongoose.Types.ObjectId;
+}
+
+
+interface IReviewModel extends Model<IReview> {
+    getAverageRating(bootcampId: mongoose.Types.ObjectId): Promise<void>;
+}
+
+
+const ReviewSchema = new mongoose.Schema<IReview>({
     title: {
         type: String, 
         trim: true,
@@ -30,5 +44,39 @@ const ReviewSchema = new mongoose.Schema({
 });
 
 ReviewSchema.index({bootcamp: 1, user: 1}, {unique: true});
+
+ReviewSchema.statics.getAverageRating = async function(bootcampId : mongoose.Types.ObjectId) {
+    
+    const obj = await this.aggregate([
+        {
+            $match: {bootcamp: bootcampId}
+        },
+        {
+            $group: {
+                _id: '$bootcamp',
+                averageRating: {$avg: '$rating'}
+            }
+        }        
+    ]);
+
+    console.log(obj)
+
+    try {
+        await mongoose.model('Bootcamp').findByIdAndUpdate(bootcampId, {
+            averageRating: obj.length > 0 ? Math.ceil(obj[0].averageRating) : 0
+        });
+    } catch (error) {
+        console.error('Error updating bootcamp average cost:', error);
+    }
+}
+
+ReviewSchema.post('save', function() {
+    (this.constructor as IReviewModel).getAverageRating(this.bootcamp);
+});
+
+ReviewSchema.pre('deleteOne', {document: true}, function() {
+    (this.constructor as IReviewModel).getAverageRating(this.bootcamp);
+});
+
 
 export default mongoose.model('Review', ReviewSchema);
