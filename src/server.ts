@@ -12,6 +12,12 @@ import fileUpload from 'express-fileupload';
 import cookieParser from 'cookie-parser'
 import path = require('path');
 
+import mongoSanitize from 'express-mongo-sanitize'
+import helmet from 'helmet'
+import hpp from 'hpp'
+import rateLimit from 'express-rate-limit'
+import cors from 'cors'
+
 dotenv.config({path: './config/config.env'});
 
 connectDB()
@@ -27,6 +33,18 @@ const app = express();
 app.use(express.json());
 app.use(fileUpload());
 app.use(cookieParser());
+
+app.use(mongoSanitize());
+app.use(helmet());
+
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 100
+})
+
+app.use(limiter)
+app.use(hpp())
+app.use(cors())
 
 app.use(express.static(path.join(__dirname, 'public')));
 

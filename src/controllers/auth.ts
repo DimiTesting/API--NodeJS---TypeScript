@@ -66,6 +66,20 @@ const sendTokenResponse = (user: any, statusCode: number, res:Response) => {
        .json({success: true, token})
 }
 
+//@desk     Logout user
+//@route    Get /api/v1/auth/logout
+//@access   Private
+
+export const logout = asyncHandler(async(req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+    res.cookie('token', 'none', {
+        expires: new Date(Date.now() + 10*1000),
+        httpOnly: true
+    })
+
+    res.status(200).json({success: true, data: {}})
+})
+
 //@desk     Get current logged user
 //@route    POST /api/v1/auth/me
 //@access   Private
